@@ -1,0 +1,66 @@
+Tyler Bovenzi
+
+#####################################################################################################
+QUESTIONS:
+#####################################################################################################
+
+-- For what types of workloads does SRTN deliver the same turnaround times as FIFO?
+
+    Consider a workload with jobs that have smaller burst times and smaller arrival times.
+    That is, the sooner the job arrives, the shorter it needs to execute.
+    In this case, early jobs have smaller arrival times, and are therefore scheduled first by fifo,
+    and have shorter burst times remaining, and are therefore scheduled first by srtn.
+
+-- For what types of workloads and quantum lengths does SRTN deliver the same response times as RR?
+
+    In a RR workload where jobs have remaining times smaller than a time quantum, jobs finish execution before they run out of time.
+    In this case, both RR and SRTN would allow jobs to execute to completion, therefore a given process
+    (with sufficiently high time remaining as to not be preemptively scheduled by SRTN)
+    would have to wait for other jobs to run to completion, delivering the same response time.
+
+
+-- What happens to response time with SRTN as job lengths increase?
+
+    As Job Lengths increase, the response time with SRTN increases for sufficiently long jobs since shorter jobs are prioritized.
+    The longest job will need to wait for all smaller jobs to complete before it is scheduled again.
+
+   - Can you use the simulator to demonstrate the trend?
+
+    This is demonstrated in the simulator where each job needs to wait for all of the smaller jobs before it to execute.
+    This can be seen by running a test file where jobs have similiar very large execution times. The longest
+    job needs to wait for all of the shortest jobs and therefore the response time is the sum of all of the other burst times.
+
+-- What happens to response time with RR as quantum lengths increase?
+
+    As quantum lengths increase, the response time with RR increases since each job is given a longer amount of time to execute.
+    Therefore a given job will have to wait a longer amount of time while all the other jobs execute.
+    That being said, longer quantum lengths can help optimize scheduling by reducing the frequency of context switching.
+
+   - Can you write an equation that gives the worst-case response time, given N jobs?
+
+    For N jobs and quantum Q, the response time: T = (N-1) * Q; This is because, in the worst case scenario,
+    all other jobs will max out their quantum timer before the round robin scheduler returns to the original job.
+
+
+#####################################################################################################
+Notes and Instructions:
+#####################################################################################################
+
+#NOTE#
+You may need to mark the script as executable:
+chmod +x schedSim
+
+
+usage: ./schedSim [-h] [-p {FIFO,RR,SRTN}] [-q QUANTUM] filename
+
+SCHEDULING SIMULATOR
+
+positional arguments:
+  filename              name of the job fi:le
+
+optional arguments:
+  -h, --help            show the help message and exit
+  -p {FIFO,RR,SRTN}, --algorithm {FIFO,RR,SRTN}
+                        scheduling algorithm to use
+  -q QUANTUM, --quantum QUANTUM
+                        time quantum for rr algorithm

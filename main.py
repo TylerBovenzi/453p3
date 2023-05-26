@@ -14,6 +14,34 @@ def load(filename):
     return sequence
 
 if __name__ == '__main__':
+
+
+
+
+    parser = argparse.ArgumentParser(description='SCHEDULING SIMULATOR')
+    parser.add_argument('filename', type=str, help='name of the job fi:le')
+
+    parser.add_argument('-p', '--algorithm',
+                            choices=ALGORITHMS,
+                            default=DEFAULT_ALGORITHM,
+                            help='scheduling algorithm to use')
+
+    parser.add_argument('-q', '--quantum',
+                            type=int,
+                            default=DEFAULT_QUANTUM,
+                            help='time quantum for rr algorithm')
+
+    args = parser.parse_args()
+
+    if args.algorithm == 'RR':
+        sched = scheduler.RR(args.filename, args.quantum)
+    elif args.algorithm == 'FIFO':
+        sched = scheduler.FIFO(args.filename)
+    elif args.algorithm == 'SRTN':
+        sched = scheduler.SRTN(args.filename)
+    else:
+        sched = scheduler.FIFO(args.filename)
+
     file_path = 'opt2.txt'  # Replace with the actual path to your file
     sequence = load(file_path)
 
