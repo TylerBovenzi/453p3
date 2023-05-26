@@ -14,10 +14,11 @@ def load(filename):
     return sequence
 
 if __name__ == '__main__':
-    file_path = 'test1in.txt'  # Replace with the actual path to your file
+    file_path = 'opt2.txt'  # Replace with the actual path to your file
     sequence = load(file_path)
 
-    frames = 10
+    frames = 9
+
     tlb_hits = 0
     tlb_misses = 0
     num_faults = 0
@@ -27,20 +28,25 @@ if __name__ == '__main__':
     backStore = BACKING_STORE()
 
     for address in sequence:
-        frame_num = tlb.lookup(address.page_num)
+        pageTable.incriment()
+        frame_num = tlb.lookup(address.page_num,pageTable)
+
+        #frame_num = -1
         if(frame_num < 0):
             #print(f"TLB_MISS {address.page_num:03}")
             tlb_misses = tlb_misses + 1
             frame_num = pageTable.lookup(address.page_num)
+
             if(frame_num < 0):
                 #print(f"Fault {address.page_num:03}")
                 #print(address.address)
                 num_faults = num_faults + 1
-                frame_num = pageTable.add(address.page_num, ram, address, backStore)
-            # else:
+                frame_num = pageTable.add(address.page_num,tlb, ram, address, backStore)
+            #else:
             #     print(f"SM {address.page_num:03}")
-            tlb.add(address.page_num, 1)
+            tlb.add(address.page_num, frame_num)
         else:
+            #print(f"{address.address}, {frame_num}")
             tlb_hits = tlb_hits + 1
 
         signed_int = ram.entries[frame_num][address.offset]

@@ -25,9 +25,10 @@ class TLB:
         for i in range(0,size):
             self.entries.append(TLB_ENTRY(-1,0))
 
-    def lookup(self, target_page_num):
+    def lookup(self, target_page_num, pagetable):
         for i in range(0, self.size):
             if(self.entries[i].page_num == target_page_num):
+                pagetable.entries[target_page_num].access_time = pagetable.timer
                 return self.entries[i].frame_num
         return -1
 
@@ -35,13 +36,14 @@ class TLB:
         self.entries.pop(0)
         self.entries.append(TLB_ENTRY(page_num,frame_num))
 
+
     def remove(self, page_num):
         for i in range(0, self.size):
-            # print(f"{self.size:03} {i:02}")
-            # print(self.entries[15])
             if (self.entries[i].page_num == page_num):
                 self.entries.pop(i)
                 self.entries.append(TLB_ENTRY(-1, 0))
+                return
+        #print(f"{page_num} error")
 
 
 class PT_ENTRY:
@@ -63,21 +65,26 @@ class PAGE_TABLE:
         for i in range(0,size):
             self.entries.append(PT_ENTRY(-1, 0, -1, -1))
 
-    def lookup(self, target_page_number):
+
+    def incriment(self):
         self.timer = self.timer + 1
+    def lookup(self, target_page_number):
         if self.entries[target_page_number].valid == 0:
             return -1
         self.entries[target_page_number].access_time = self.timer
         return self.entries[target_page_number].frame_num
 
 
-    def add(self, page_num, ram, address, backing_store):
+    def add(self, page_num, tlb, ram, address, backing_store):
         frame_num = self.frames_used
         if(self.frames_used >= self.frames):
             frame_num = self.evict()
+            #print(f"evicting: {frame_num}")
+            tlb.remove(page_num)
         self.entries[page_num].frame_num = frame_num
         self.entries[page_num].valid = 1
         self.entries[page_num].write_time = self.timer
+        self.entries[page_num].access_time = self.timer
         self.frames_used = self.frames_used + 1
         ram.entries[frame_num] = backing_store.data[page_num]
         return frame_num
