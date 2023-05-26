@@ -128,11 +128,11 @@ class PAGE_TABLE:
     def evict(self, ram_info):
 
         self.frames_used = self.frames_used - 1
-        if(self.eviction_scheme == 'fifo'):
+        if(self.eviction_scheme == 'FIFO'):
             index_to_evict = self.get_FIFO()
-        elif(self.eviction_scheme == 'lru'):
+        elif(self.eviction_scheme == 'LRU'):
             index_to_evict = self.get_LRU()
-        elif (self.eviction_scheme == 'opt'):
+        elif (self.eviction_scheme == 'OPT'):
             index_to_evict = self.get_OPT(ram_info)
         else:
             index_to_evict = self.get_FIFO()

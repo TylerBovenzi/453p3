@@ -1,4 +1,5 @@
-#!/usr/local/bin python
+#!/usr/bin/env python
+import argparse
 import struct
 
 from memComponents import *
@@ -15,43 +16,22 @@ def load(filename):
 
 if __name__ == '__main__':
 
-
-
-
-    parser = argparse.ArgumentParser(description='SCHEDULING SIMULATOR')
-    parser.add_argument('filename', type=str, help='name of the job fi:le')
-
-    parser.add_argument('-p', '--algorithm',
-                            choices=ALGORITHMS,
-                            default=DEFAULT_ALGORITHM,
-                            help='scheduling algorithm to use')
-
-    parser.add_argument('-q', '--quantum',
-                            type=int,
-                            default=DEFAULT_QUANTUM,
-                            help='time quantum for rr algorithm')
+    parser = argparse.ArgumentParser()
+    parser.add_argument("filename", help="the filename")
+    parser.add_argument("frame_size", type=int, help="the frame size")
+    parser.add_argument("option", choices=["OPT", "LRU", "FIFO"], help="the option (OPT, LRU, or FIFO)")
 
     args = parser.parse_args()
-
-    if args.algorithm == 'RR':
-        sched = scheduler.RR(args.filename, args.quantum)
-    elif args.algorithm == 'FIFO':
-        sched = scheduler.FIFO(args.filename)
-    elif args.algorithm == 'SRTN':
-        sched = scheduler.SRTN(args.filename)
-    else:
-        sched = scheduler.FIFO(args.filename)
-
-    file_path = 'opt2.txt'  # Replace with the actual path to your file
+    file_path = args.filename
     sequence = load(file_path)
 
-    frames = 5
+    frames = max(args.frame_size,1)
 
     tlb_hits = 0
     tlb_misses = 0
     num_faults = 0
     tlb = TLB(16)
-    pageTable = PAGE_TABLE(256,frames,'opt',tlb,sequence)
+    pageTable = PAGE_TABLE(256,frames,args.option,tlb,sequence)
     ram = RAM(frames)
     backStore = BACKING_STORE()
 
