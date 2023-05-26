@@ -1,5 +1,10 @@
+
+import binascii
+
+
 class Virtual_Address:
-    def __init__(self, page, offset):
+    def __init__(self, address, page, offset):
+        self.address = address
         self.page_num   = page
         self.offset  = offset
 
@@ -66,7 +71,7 @@ class PAGE_TABLE:
         return self.entries[target_page_number].frame_num
 
 
-    def add(self, page_num):
+    def add(self, page_num, ram, address, backing_store):
         frame_num = self.frames_used
         if(self.frames_used >= self.frames):
             frame_num = self.evict()
@@ -74,6 +79,8 @@ class PAGE_TABLE:
         self.entries[page_num].valid = 1
         self.entries[page_num].write_time = self.timer
         self.frames_used = self.frames_used + 1
+        ram.entries[frame_num] = backing_store.data[page_num]
+        return frame_num
 
     def get_FIFO(self):
         first_time = -1
@@ -106,6 +113,22 @@ class PAGE_TABLE:
         self.entries[index_to_evict].valid = 0
         self.tlb.remove(index_to_evict)
         return self.entries[index_to_evict].frame_num
+
+
+class RAM:
+    def __init__(self,frames):
+        self.frames = frames
+        self.entries = [None] * frames
+
+class BACKING_STORE:
+    def __init__(self):
+        frame_size = 256
+        num_entries = 256
+        self.data = [None] * num_entries
+        file_name = "BACKING_STORE.bin"
+        with open(file_name, "rb") as file:
+            for i in range(num_entries):
+                self.data[i] = file.read(256)
 
 
 
