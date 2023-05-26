@@ -17,15 +17,17 @@ if __name__ == '__main__':
     file_path = 'opt2.txt'  # Replace with the actual path to your file
     sequence = load(file_path)
 
-    frames = 9
+    frames = 5
 
     tlb_hits = 0
     tlb_misses = 0
     num_faults = 0
     tlb = TLB(16)
-    pageTable = PAGE_TABLE(256,frames,'fifo',tlb)
+    pageTable = PAGE_TABLE(256,frames,'opt',tlb,sequence)
     ram = RAM(frames)
     backStore = BACKING_STORE()
+
+    ram_info = [None] * frames
 
     for address in sequence:
         pageTable.incriment()
@@ -41,7 +43,7 @@ if __name__ == '__main__':
                 #print(f"Fault {address.page_num:03}")
                 #print(address.address)
                 num_faults = num_faults + 1
-                frame_num = pageTable.add(address.page_num,tlb, ram, address, backStore)
+                frame_num = pageTable.add(address.page_num,tlb, ram, address, backStore, ram_info)
             #else:
             #     print(f"SM {address.page_num:03}")
             tlb.add(address.page_num, frame_num)
@@ -53,6 +55,7 @@ if __name__ == '__main__':
         if(signed_int > 127):
             signed_int = signed_int - 256
         print(f"{address.address}, {signed_int}, {frame_num}, {binascii.hexlify(ram.entries[frame_num]).decode('utf-8')}")
+        ram_info[frame_num] = address.page_num
 
     print(f"Number of Translated Addresses = {len(sequence)}")
     print(f"Page Faults = {num_faults}")

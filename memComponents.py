@@ -53,8 +53,9 @@ class PT_ENTRY:
         self.write_time = wt
         self.access_time = at
 
+
 class PAGE_TABLE:
-    def __init__(self, size, frames, eviction_scheme, tlb):
+    def __init__(self, size, frames, eviction_scheme, tlb, sequence):
         self.size = size
         self.frames = frames
         self.frames_used = 0
@@ -62,6 +63,8 @@ class PAGE_TABLE:
         self.timer = 0
         self.eviction_scheme = eviction_scheme
         self.tlb = tlb
+        self.sequence = sequence
+
         for i in range(0,size):
             self.entries.append(PT_ENTRY(-1, 0, -1, -1))
 
@@ -75,12 +78,12 @@ class PAGE_TABLE:
         return self.entries[target_page_number].frame_num
 
 
-    def add(self, page_num, tlb, ram, address, backing_store):
+    def add(self, page_num, tlb, ram, address, backing_store, ram_info):
         frame_num = self.frames_used
         if(self.frames_used >= self.frames):
-            frame_num = self.evict()
+            frame_num = self.evict(ram_info)
             #print(f"evicting: {frame_num}")
-            tlb.remove(page_num)
+            #tlb.remove(page_num)
         self.entries[page_num].frame_num = frame_num
         self.entries[page_num].valid = 1
         self.entries[page_num].write_time = self.timer
@@ -108,13 +111,29 @@ class PAGE_TABLE:
                     index = i
                     first_time = self.entries[i].access_time
         return index
+    def get_OPT(self,ram_info):
+        access_time = [1000] * len(ram_info)
+        sequence_remaining = self.sequence[self.timer:]
+        for i in range(len(ram_info)):
+            for j in range(len(sequence_remaining)):
+                if(sequence_remaining[j].page_num == ram_info[i]):
+                    if(j < access_time[i]):
+                        access_time[i] = j
 
-    def evict(self):
+        value = max(access_time)
+        index = access_time.index(value)
+        return ram_info[index]
+
+
+    def evict(self, ram_info):
+
         self.frames_used = self.frames_used - 1
         if(self.eviction_scheme == 'fifo'):
             index_to_evict = self.get_FIFO()
         elif(self.eviction_scheme == 'lru'):
             index_to_evict = self.get_LRU()
+        elif (self.eviction_scheme == 'opt'):
+            index_to_evict = self.get_OPT(ram_info)
         else:
             index_to_evict = self.get_FIFO()
         self.entries[index_to_evict].valid = 0
